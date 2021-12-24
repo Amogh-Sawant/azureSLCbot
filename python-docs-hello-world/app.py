@@ -34,3 +34,23 @@ def main():
 if __name__ == "__main__":
     app.run(host="0.0.0.0")
     main()
+    
+    
+import requests
+import json
+
+url = "https://asllang.cognitiveservices.azure.com/language/:query-knowledgebases?projectName=AzureASL&api-version=2021-10-01&deploymentName=production"
+
+headers={'Ocp-Apim-Subscription-Key': 'keyxxx', "Content-Type":"application/json"}
+
+question = ''
+
+while question != "exit":
+    question = input("")
+    data="{'question': '"+question+"'}"
+
+    if question != '':
+        res = requests.post(url=url, data=data, headers=headers)
+        res = json.loads(res.text)
+
+        print(res['answers'][0]['answer'])
