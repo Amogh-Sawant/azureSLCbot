@@ -54,6 +54,7 @@
     
     <body>
         <h1 style="font-family: cursive;">Sign Language ChatBot</h1>
+        <h3> <button type="button"> click me</button></h3>
 
         <div class="box">
 
@@ -76,10 +77,19 @@
         </div>
 
         <div class="box1">
-            {{pythonimg}}
-            <!-- <video class="vid" id="video" playsinline autoplay></video>
 
-            <script>
+                <img src="{{ url_for('video') }}" class="imgc"/>
+                
+                <script type="text/javascript">
+                    window.addEventListener('beforeunload', function (e) {
+                        console.log("exit attempted")
+                        
+                    });
+                </script>
+                
+            <!-- <video class="vid" id="video" playsinline autoplay></video> -->
+
+            <!-- <script>
                 'use strict'
 
                 const video = document.getElementById('video');
