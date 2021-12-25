@@ -1,0 +1,13 @@
+Flask>=1.0,<=1.1.2
+click==7.1.1
+itsdangerous==1.1.0
+Jinja2==2.11.3
+MarkupSafe==1.1.1
+Werkzeug==1.0.1
+pkg-resources==0.0.0
+Werkzeug==1.0.1
+numpy
+opencv-python
+pyautogui
+azure-cognitiveservices-vision-customvision==3.1.0
+botbuilder-ai
