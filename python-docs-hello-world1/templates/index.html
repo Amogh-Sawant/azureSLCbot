@@ -22,6 +22,7 @@
                 
                 border: 5px solid rgb(0, 255, 170);
                 border-radius: 15px;
+                background-color: burlywood;
             }
 
             .box1{
@@ -53,15 +54,10 @@
         <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"> </script>
         <script type=text/javascript> 
 
-            // $(function() { $("#mybutton").click(function (event) { $.getJSON('/chatbotOn', { },
-            // function(data) { }); return false; }); }); 
-
-            // $(function() { $("#mybutton2").click(function (event) { $.getJSON('/chatbotOff', { },
-            // function(data) { }); return false; }); }); 
-
             $(document).keyup(function(event) {
                 if (event.which === 13) {
                     $.getJSON('/chatbotOff', { }, function(data) { }); return false;
+
                 }
                 if (event.which === 32) {
                     $.getJSON('/chatbotOn', { }, function(data) { }); return false;
@@ -70,31 +66,35 @@
 
         </script> 
 
-
     </head>
 
     <body>
         <h1 style="font-family: cursive;">Sign Language ChatBot</h1>
-        <input type="button" id="mybutton" value="Start Recording"/>
-        <input type="button" id="mybutton2" value="Stop Recording"/>
 
         <div class="box">
 
-            <img src="" id="image" class="imgc">
+            <img src="{{ url_for('image') }}" class="imgc">
 
-            <script type="text/javascript">
-                let image = document.getElementById('image');
-                let images = ['/static/img1.jpg','/static/img2.jpg'];
-                let i = 0;
+                <!-- <script type="text/javascript">
+                    let image = document.getElementById('image');
+                    var images = [];
+                    let i = 0;
+                    let interval = 1000;
+                    
+                    setInterval(function(){
+                        let str = "{{reply}}"
+                        let strLength = str.length;
+                        image.src = "/static/"+str[i]+".svg";
+                        i++;
+                        if (i>strLength){
+                            i = 0;
+                            image.src = "/static/retry.png";
+                        }
+                    }, interval);
 
-                setInterval(function(){
-                    image.src = images[i];
-                    i++;
-                    if (i==2){
-                        i = 0;
-                    }
-                }, 1000);
-            </script>
+                    {}
+                    
+                </script> -->
 
         </div>
 
