@@ -1,31 +1,33 @@
-from flask import Flask, render_template, sessions, url_for, Response, session
+from flask import Flask, render_template, url_for, Response, request
 from azure.cognitiveservices.vision.customvision.prediction import CustomVisionPredictionClient
 from msrest.authentication import ApiKeyCredentials
-import pyautogui
-import numpy as np
 import requests
 import json
 from camera import VideoCamera
-from time import sleep
-import cv2
+from time import sleep, time
 import os
+import PIL.Image as Image
+import io
 
-prediction_endpoint = "https://testvision326-prediction.cognitiveservices.azure.com"
-prediction_key = "791857180c034b83ad76780d8e22626f"
-project_id = "2b0b8510-b87b-4172-b1d6-d079127c2243"
+prediction_endpoint = "https://aslvision-prediction.cognitiveservices.azure.com"
+prediction_key = "76ce50d98d064322bb2fd555ff0f61f5"
+project_id = "fb671e7c-3b34-4b0d-b180-f21bf629c550"
 model_name = "Iteration1"
 url = "https://asllang.cognitiveservices.azure.com/language/:query-knowledgebases?projectName=AzureASL&api-version=2021-10-01&deploymentName=production"
 headers={'Ocp-Apim-Subscription-Key': '4226713283bd4af1bbb06c34d70388dc', "Content-Type":"application/json"}
-question = ''
-onlyletters = "abcdefghijklmnopqrstuvwxyz"
+onlyletters = "abcdefghijklmnopqrstuvwxyz "
 start_recording = False
 
 credentials = ApiKeyCredentials(in_headers={"Prediction-key": prediction_key})
 prediction_client = CustomVisionPredictionClient(endpoint=prediction_endpoint, credentials=credentials)
 app = Flask(__name__)
 
-global reply 
-reply = 1
+global reply, n, replyChange, question
+
+reply = "welcome"
+n = 0
+replyChange = False
+question = ""
 
 def filterstring(string):
     string = string.lower()
@@ -58,79 +60,107 @@ def chatbot():
     
     return "Exit"
 
-def testbot():
-    global reply
-    while True:
-        reply = input("")
-
 def generate_frames(camera):
-    global reply
+    global reply, start_recording
+    t=0
+    start_timer = True
     while True:
         data = camera.get_frame()
         frame = data[0]
+
+        if start_recording:
+
+            if start_timer:
+                old_time = time()
+                start_timer  = False
+
+            if time() - old_time > 1:
+                imj = Image.open(io.BytesIO(frame))
+                imj.save(f'static/question/classifyimg{t}.jpg')
+                print("ss done")
+                start_timer = True
+                t += 1
+                if t==30:
+                    start_recording = False
 
         yield(b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 def generate_answer():
-    global reply
+    global reply, n, replyChange
 
     while True:
-        n = reply
-        image_data = open(os.path.join('static/test-images',f"IMG_TEST_{n}.jpg"), "rb").read()
-        sleep(1)
+        if replyChange:
+            n = 0
+            replyChange = False
+
+        if reply[n]!=" ":
+            image_data = open(os.path.join('static/test-images',f"{reply[n].upper()}.jpg"), "rb").read()
+
+        sleep(0.7)
+        n += 1
+        if n==len(reply):
+            n = 0
 
         yield(b'--frame\r\n'
                     b'Content-Type: image/jpeg\r\n\r\n' + image_data + b'\r\n\r\n')
 
     
-@app.route("/")
+@app.route("/", methods=["POST", "GET"])
 def index():
+    global question, replyChange, reply
+
+    if request.method == "POST":
+        rply = request.form.get("rply")
+        question = rply
+
+        if question != '':
+            data="{'question': '" + question + "'}"
+            res = requests.post(url=url, data=data, headers=headers)
+            res = json.loads(res.text)
+
+            reply = filterstring(res['answers'][0]['answer'])
+            replyChange = True
+            print(reply)
+
     return render_template("index.html")
+
 
 @app.route("/chatbotOn")
 def chatbotOn():
-    global start_recording, reply
+    global start_recording, reply, replyChange, question
+
     start_recording = True
-    pn = 0
-    question = ""
-    # chatbot()
-    testbot()
 
-    # while start_recording:
-    #     image = pyautogui.screenshot()
-    #     image = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR)
-    #     cv2.imwrite(f"static/question/classifyimage{pn}.jpg", image)
-    #     pn = pn + 1
-    #     sleep(1)
-    #     print ("im here")
+    if not start_recording:
+        for image in os.listdir('static/question'):
+            image_data = open(os.path.join('static/question',image), "rb").read()
+            results = prediction_client.classify_image(project_id, model_name, image_data)
 
-    # if not start_recording:
-        # for image in os.listdir('static/question'):
-        #     image_data = open(os.path.join('static/question',image), "rb").read()
-        #     results = prediction_client.classify_image(project_id, model_name, image_data)
+            for prediction in results.predictions:
+                if prediction.probability > 0.4:
+                    question = question + prediction.tag_name
 
-        #     for prediction in results.predictions:
-        #         if prediction.probability > 0.5:
-        #             question = question + prediction.tag_name
+        if question != '':
+            data="{'question': '" + question + "'}"
+            res = requests.post(url=url, data=data, headers=headers)
+            res = json.loads(res.text)
 
-        # if question != '':
-        #     data="{'question': '" + question + "'}"
-        #     res = requests.post(url=url, data=data, headers=headers)
-        #     res = json.loads(res.text)
-
-        #     reply = filterstring(res['answers'][0]['answer'])
-        #     print(reply) # send this reply to html file without reloading the damn page
+            reply = filterstring(res['answers'][0]['answer'])
+            replyChange = True
+            print(reply)
         
-        # print("stopped")
+        print("stopped")
 
-        # return "Exit"
+        return "Exit"
 
     return "Exit"
+
 
 @app.route("/chatbotOff")
 def chatbotOff():
     global start_recording
+
     start_recording = False
 
     return "none"
