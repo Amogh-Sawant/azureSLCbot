@@ -166,4 +166,4 @@ def image():
     return Response(generate_answer(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0")
+    app.run()
