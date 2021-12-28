@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ASLCBot</title>
+
+        <style>
+
+            body{
+                background-color: #fefbe9;
+            }
+
+            h1{
+                margin-left: 10%;
+                margin-top: 2%;
+                color: #943d24;
+            }
+
+            p, li{
+                text-align: justify;
+                font-size: smaller;
+                font-weight: 100;
+            }
+
+            .box{
+                width: 670px;
+                height: 550px;
+                padding: 2px;
+                margin-top: 90px;
+                margin-left: 790px;
+                
+                border: 5px solid #39395f;
+                border-radius: 15px;
+                background-color: #e1eedd;
+            }
+
+            .box1{
+                width: 670px;
+                height: 550px;
+                padding: 2px;
+                margin-top: -565px;
+                margin-left: 50px;
+                
+                border: 5px solid #39395f;
+                border-radius: 15px;
+                background-color: #e1eedd
+            }
+
+            .imgc{
+                width: 100%;
+                height: 100%;
+                border-radius: 10px;
+
+            }
+
+            .vid{
+                width: 100%;
+                height: 100%;
+                border-radius: 10px;
+            }
+
+            .hideclass2{
+                float:left;
+                padding-left: 40%;
+                margin-left: -10%;
+                color: #6db784;
+                font-size: larger;
+            }
+
+            .formdiv{
+                margin-top: 1%;
+                padding-left: 50%;
+                margin-left: -10%;
+            }
+
+            .hideclass{
+                float:left;
+                padding-left: 50%;
+                margin-left: -15%;
+                color: red;
+                font-size: larger;
+                
+                animation: animate 
+                    1.5s linear infinite;
+            }
+
+            @keyframes animate{
+                0%{
+                    opacity: 0;
+                }
+                50%{
+                    opacity: 0.7;
+                }
+                100%{
+                    opacity: 0;
+                }
+            }
+
+        </style>
+
+        <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"> </script>
+        <script type=text/javascript> 
+
+            $(document).keyup(function(event) {
+                if (event.which === 13) {
+                    document.getElementById('hideaway').style.display='none';
+                    document.getElementById('hideaway2').style.display='block';
+                    $.getJSON('/chatbotOff', { }, function(data) { }); return false;
+
+                }
+                if (event.which === 187) {
+                    document.getElementById('hideaway').style.display='block';
+                    document.getElementById('hideaway2').style.display='none';
+                    $.getJSON('/chatbotOn', { }, function(data) { }); return false;
+                    
+                }
+            });
+
+        </script> 
+
+    </head>
+
+    <body>
+        <h1 style="font-family: 'Courier New', Courier, monospace;">American Sign Language ChatBot</h1>
+
+        <div id="hideaway" class="hideclass" style="display: none;"><h3><b>•</b>RECORDING HAND SIGNS (Press 'ENTER' to Stop)</h3></div>
+        <div id="hideaway2" class="hideclass2" style="display: block;"><h3><b>•</b>Press '=' to start recording or Scroll down to read intructions</h3></div>
+
+        <script>
+            window.addEventListener('beforeunload', function (e) {
+                
+                $.getJSON('/chatbotOff', { }, function(data) { }); return false;
+
+            });
+        </script>
+
+
+        <div class="box">
+
+            <img src="{{ url_for('image') }}" class="imgc">
+
+        </div>
+
+        <div class="box1">
+
+            <img src="{{ url_for('video') }}" class="imgc"/>
+
+        </div>
+
+        <h2> 
+
+        <div class="formdiv">
+        <form method="post" id="rply-form">
+            <input type="text" name="rply" id="rply">
+            <button type="submit" value="Send">send</button>
+        </form>
+        </div>
+
+        <p> 
+            Intructions:
+            <ol>
+                <li>Chatbot opens up with 'WELCOME' message playing in the right screen.</li>
+                <li>Press '=' to start recording your hand signs. Please make sure your have good lighting and try to show your hand in the middle of the left screen, covering the whole screen beforehand to get good results. Avoid recording very long question.</li>
+                <li>Press 'Enter' to stop the recording and wait for your answer.</li>
+                <li>Your answer will show up in the right screen in american sign language</li>
+                <li>If you dont know sign language, use the textbox as an alternative.</li>
+                <li>Please avoid using any symbols and number and keep the chat short and simple :)</li>
+                <li>If you've been recodring more than 30secs please press 'Enter'.
+            </ol>
+        </p>
+
+        <p>
+            Working:
+            <ol>
+                <li>Once, it starts recording and you see a message flashing in red text 'recording hand signs', it grabs frame every 1 second and saves it in the 'questions' folder. I've made it so that the program automatically stops grabbing frames after storing 30 frames in the folder as a privacy concern, regardless of the message blinking above.</li>
+                <li>After you press 'Enter' and stop the recording, the program scans the 'questions' folder and classifies the hand sign images into the corresponding Alphabet. After classifying the images, it deletes the image from the folder.</li>
+                <li> I've used Azure Custom Vision to train and classify the hand signs but since I've azure student subscription, there were limited number of images I could train on and hence, it might perform poor in bad lighting.</li>
+                <li>After classifying the images into characters, it concatinates the individual characters it into a string and send it to the Chatbot. I've made use of Azure Language Services to create the chatbot and have used "Friendly" and "Caring" Chit-Chat as the training data.</li>
+                <li>After getting the reply from chatbot, it plays the answer by showing the handsign images corresponding to the alphabet in the 'imgdatabase' folder.</li>
+            </ol>
+        </p>
+
+        <p> 
+            Note: If you are getting 'sorry I dont understand' as a reply, please check the lighting around. Since, I have trained it on limited training data and resources(as I have azure student subscription), the model is still very rudimentary. Please feel free to use the textbox above to chat with the chatbot or to test the chatbot.
+        </p>
+
+        <p>
+            Note: In case the chatbot gets stuck i.e. not changing images in right screen, try reloading the page.
+        </p>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.js"
+                integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+                crossorigin="anonymous"></script>
+        
+        <script type="text/javascript">
+            $(document).on('submit','#rply-form',function(e){
+            e.preventDefault();
+            $.ajax({
+                type:'POST',
+                url:'/',
+                data:{
+                rply:$("#rply").val()
+                }
+            })
+            });
+        </script>
+    </body>
+</html>
