@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'ASLCbotB1'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_6647210213474CD3B9405B4CD82EDA02 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_B847EE48066E49C2A169ED3CB7E7395D }}
