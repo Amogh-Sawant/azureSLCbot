@@ -134,7 +134,8 @@ def chatbotOn():
                             question = question + " "
                         else:
                             question = question + prediction.tag_name
-                os.remove(os.path.join('static/question',image))
+                if image != "placeholder.jpg":
+                    os.remove(os.path.join('static/question',image))
 
             print(question)
             if question != '':
